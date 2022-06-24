@@ -1,0 +1,10 @@
+NAME
+       fmirror - find the fastest mirror URL
+
+SYNOPSIS
+       fmirror [options / URLs]
+
+DESCRIPTION
+       fmirror is a tool that can help you find a mirror with the lowest network latency.
+
+       It can be used to optimize the mass installation of packages (during updates or when working with containers)

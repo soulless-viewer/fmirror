@@ -1,0 +1,58 @@
+#!/bin/sh
+
+DEFAULT_ATTEMPTS_NUM=3
+DEFAULT_TIMEOUT=3
+
+BEST_TIME=$DEFAULT_TIMEOUT
+BEST_URL=""
+
+function time_total {
+  function inner {
+    echo $(curl -s -o /dev/null -m $BEST_TIME -w "%{time_total}\n" "$1")
+  }
+
+  SUM_TT=0
+  for i in $(seq 1 $DEFAULT_ATTEMPTS_NUM); do
+    tt=$(inner $1)
+    if [ "$tt" != "0.000000" ]; then
+       SUM_TT=$(echo "$SUM_TT + $tt" | bc)
+    fi
+  done
+
+  # Default cURL scale is 6
+  # https://github.com/curl/curl/blob/master/src/tool_writeout.c#L155
+  echo "scale=6; $SUM_TT / $DEFAULT_ATTEMPTS_NUM" | bc | sed 's/^\./0./'
+}
+
+function get_faster {
+  for url in $(echo "$1"); do
+    tt=$(time_total "$url")
+    if [ "$tt" = "0" ]; then
+      continue
+    fi
+
+    if [ $(echo "${BEST_TIME} > ${tt}" | bc) != 0 ]; then
+      BEST_TIME=$tt
+      BEST_URL=$url
+    fi
+  done
+  echo $BEST_URL
+}
+
+# Alpine #######################################################################
+MIRRORS="$(curl -s -m $DEFAULT_TIMEOUT 'https://dl-cdn.alpinelinux.org/alpine/MIRRORS.txt' | sed 's/\/$/\/last-updated/g')"
+if [ "$?" != "0" ]; then
+  pass
+fi
+
+get_faster "$MIRRORS"
+
+
+
+
+
+
+
+
+
+################################################################################
