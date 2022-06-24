@@ -1,7 +1,43 @@
 #!/bin/sh
 
-DEFAULT_ATTEMPTS_NUM=3
-DEFAULT_TIMEOUT=3
+DEFAULT_ATTEMPTS_NUM="3"
+DEFAULT_TIMEOUT="3"
+
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -f|--format)
+      FORMAT="$2"
+      shift
+      shift
+      ;;
+    -a|--attempts)
+      DEFAULT_ATTEMPTS_NUM="$2"
+      shift
+      shift
+      ;;
+    -t|--timeout)
+      DEFAULT_TIMEOUT="$2"
+      shift
+      shift
+      ;;
+    # -u|--update)
+    #   UPDATE_IN_PLACE=YES
+    #   shift
+    #   ;;
+    -*|--*)
+      echo "option $1 is unknown"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}"
 
 BEST_TIME=$DEFAULT_TIMEOUT
 BEST_URL=""
@@ -42,17 +78,9 @@ function get_faster {
 # Alpine #######################################################################
 MIRRORS="$(curl -s -m $DEFAULT_TIMEOUT 'https://dl-cdn.alpinelinux.org/alpine/MIRRORS.txt' | sed 's/\/$/\/last-updated/g')"
 if [ "$?" != "0" ]; then
-  pass
+  echo
 fi
 
 get_faster "$MIRRORS"
-
-
-
-
-
-
-
-
 
 ################################################################################
